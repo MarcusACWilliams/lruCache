@@ -2,8 +2,13 @@
  * @param {number} capacity
  */
 var LRUCache = function(capacity) {
-    this.cache = new Map(capacity);
+    this.cache = new Map();
     this.lru   = [];
+    this.head = ListNode(null);
+    this.leastRecent;
+    this.tail = head;
+    head.next = tail;
+
 };
 
 /** 
@@ -29,27 +34,33 @@ LRUCache.prototype.get = function(key) {
  */
 LRUCache.prototype.put = function(key, value) {
     let val;
-    let least;
 
     // If Key is found move key to the top of the list
     if( val = this.cache.get(key)) {
 
     }
     else {
-        if(this.lru.length == capacity) { 
-            least = this.lru.shift();
-            this.cache.delete(key);
+        if(this.cache.size == capacity) { 
+            least = this.head;
+            this.cache.delete(this.head.key);
+            this.head = this.head.next;
+
         }
     }
-    // Add new node to top of the list
-    this.lru.push(new ListNode(value));
-    this.cache.add(key, value);
+    // Add new node to END of the list
+    mostRecent.next = new ListNode(value, key);
+    mostRecent.next.prev = mostRecent;
+    mostRecent = mostRecent.next;
+    mostRecent.next = null;
+
+    this.cache.set(key, mostRecent);
 
 };
 
 
-function ListNode(val) {
+function ListNode(val, key) {
     this.val = val;
+    this.key = key;
     this.prev = this.next = null;
 }
 
