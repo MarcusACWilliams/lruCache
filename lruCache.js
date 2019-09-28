@@ -4,11 +4,14 @@
 var LRUCache = function(capacity) {
     this.cache = new Map();
     this.lru   = [];
+    this.capacity = capacity;
     
     this.mostRecent = new ListNode(null,null);
-    this.leastRecent = mostRecent;
-    mostRecent.next = leastRecent;
-    leastRecent.prev = mostRecent;
+    this.leastRecent = this.mostRecent;
+    this.mostRecent.next = this.leastRecent;
+    this.leastRecent.prev = this.mostRecent;
+
+    this.cache.set(null,null);
 
 };
 
@@ -23,18 +26,18 @@ LRUCache.prototype.get = function(key) {
     // If key is found return value AND!!! move key to top of the list!!!
     if( nodeToDelete = this.cache.get(key)) {
 
+        // Slice node from list
         nodeToDelete.prev.next = nodeToDelete.next; // (nodeToDelete.prev) --> point forward  
         nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
-        //this.cache.delete(nodeToDelete.key);        // Delete node from cache
         
+        // Push node back onto list
         nodeToDelete.next = this.mostRecent;
+        nodeToDelete.prev = null;
         this.mostRecent.prev = nodeToDelete;
         this.mostRecent = nodeToDelete;
-
-        // Remove node refrences...
-        nodeToDelete.next = null;
-        nodeToDelete.prev = null;
-        nodeToDelete = null;
+        
+        // Return cached value
+        return nodeToDelete.val;
     }
     else {
         return -1;
@@ -64,11 +67,11 @@ LRUCache.prototype.put = function(key, value) {
 
     }
     else {
-        if(this.cache.size == capacity) { 
+        if(this.cache.size == this.capacity) { 
             
             this.cache.delete(this.leastRecent.key);
-            nodeToDelete = leastRecent;
-            leastRecent = leastRecent.next;
+            nodeToDelete = this.leastRecent;
+            this.leastRecent = this.leastRecent.prev;
             nodeToDelete.next = null;
 
         }
@@ -103,9 +106,17 @@ function ListNode(val, key) {
  * var obj = new LRUCache(capacity)
  * var param_1 = obj.get(key)
  * obj.put(key,value)
+ * ["LRUCache","put","put","get","put","get","put","get","get","get"]
+ * [[2],[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]
  */
 
- var lru = new LRUCache(3);
+ var lru = new LRUCache(2);
  lru.put(1,1);
  lru.put(2,2);
+ lru.get(1);
  lru.put(3,3);
+ lru.get(2);
+ lru.put(4,4);
+ lru.get(1);
+ lru.get(3);
+ lru.get(3);
