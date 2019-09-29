@@ -3,7 +3,6 @@
  */
 var LRUCache = function(capacity) {
     this.cache = new Map();
-    this.lru   = [];
     this.capacity = capacity;
     
     this.mostRecent = {next: null};
@@ -62,7 +61,13 @@ LRUCache.prototype.put = function(key, value) {
 
         nodeToDelete.prev.next = nodeToDelete.next; // (nodeToDelete.prev) --> point forward  
         nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
-        this.cache.delete(nodeToDelete.key);        // Delete node from cache
+        nodeToDelete.val = value;
+        this.cache.set(key, nodeToDelete);        // Delete node from cache
+
+        nodeToDelete.next = this.mostRecent.next;
+        this.mostRecent.next.prev = nodeToDelete;
+        nodeToDelete.prev = this.mostRecent;
+        this.mostRecent.next = nodeToDelete;
     
         nodeToDelete = null;
 
@@ -75,7 +80,6 @@ LRUCache.prototype.put = function(key, value) {
             nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
             this.cache.delete(nodeToDelete.key);
         }
-    }
 
     // Add new node to END of the list
     let newNode = new ListNode(value, key);
@@ -85,10 +89,7 @@ LRUCache.prototype.put = function(key, value) {
     this.mostRecent.next = newNode;
 
     this.cache.set(key, this.mostRecent.next);
-
-};
-
-LRUCache.prototype.pop = function() {
+    }
 
 };
 
@@ -106,22 +107,3 @@ function ListNode(val, key) {
  * ["LRUCache","put","put","get","put","get","put","get","get","get"]
  * [[2],[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]
  */
-
- /*
- var lru = new LRUCache(2);
- lru.put(1,1);
- lru.put(2,2);
- lru.get(1);
- lru.put(3,3);
- lru.get(2);
- lru.put(4,4);
- lru.get(1);
- lru.get(3);
- lru.get(3);
-*/
-
-var lru = new LRUCache(1);
-lru.put(2,1);
-lru.get(2);
-lru.put(3,2);
-lru.get(2);
