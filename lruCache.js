@@ -6,12 +6,12 @@ var LRUCache = function(capacity) {
     this.lru   = [];
     this.capacity = capacity;
     
-    this.mostRecent = new ListNode(null,null);
-    this.leastRecent = this.mostRecent;
+    this.mostRecent = {next: null};
+    this.leastRecent = {prev: null};
     this.mostRecent.next = this.leastRecent;
     this.leastRecent.prev = this.mostRecent;
 
-    this.cache.set(null,null);
+    //this.cache.set(null,null);
 
 };
 
@@ -26,16 +26,20 @@ LRUCache.prototype.get = function(key) {
     // If key is found return value AND!!! move key to top of the list!!!
     if( nodeToDelete = this.cache.get(key)) {
 
-        // Slice node from list
-        nodeToDelete.prev.next = nodeToDelete.next; // (nodeToDelete.prev) --> point forward  
-        nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
-        
-        // Push node back onto list
-        nodeToDelete.next = this.mostRecent;
-        nodeToDelete.prev = null;
-        this.mostRecent.prev = nodeToDelete;
-        this.mostRecent = nodeToDelete;
-        
+        if(nodeToDelete != this.mostRecent.next) {
+
+            // Slice node from list
+            nodeToDelete.prev.next = nodeToDelete.next; // (nodeToDelete.prev) --> point forward  
+            nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
+            
+            // Push node back onto list
+            nodeToDelete.next = this.mostRecent.next;
+            this.mostRecent.next.prev = nodeToDelete;
+            
+            nodeToDelete.prev = this.mostRecent;
+            this.mostRecent.next = nodeToDelete;
+        }
+
         // Return cached value
         return nodeToDelete.val;
     }
@@ -59,35 +63,28 @@ LRUCache.prototype.put = function(key, value) {
         nodeToDelete.prev.next = nodeToDelete.next; // (nodeToDelete.prev) --> point forward  
         nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
         this.cache.delete(nodeToDelete.key);        // Delete node from cache
-        
-        // Remove node refrences...
-        nodeToDelete.next = null;
-        nodeToDelete.prev = null;
+    
         nodeToDelete = null;
 
     }
     else {
         if(this.cache.size == this.capacity) { 
-            
-            this.cache.delete(this.leastRecent.key);
-            nodeToDelete = this.leastRecent;
-            this.leastRecent = this.leastRecent.prev;
-            nodeToDelete.next = null;
+            nodeToDelete = this.leastRecent.prev;
 
+            nodeToDelete.prev.next = nodeToDelete.next; // (nodeToDelete.prev) --> point forward  
+            nodeToDelete.next.prev = nodeToDelete.prev; // (nodeToDelete.next) --> point backward
+            this.cache.delete(nodeToDelete.key);
         }
     }
 
     // Add new node to END of the list
     let newNode = new ListNode(value, key);
-    newNode.next = this.mostRecent;
-    this.mostRecent.prev = newNode
-    this.mostRecent = newNode;
+    newNode.next = this.mostRecent.next;
+    this.mostRecent.next.prev = newNode;
+    newNode.prev = this.mostRecent;
+    this.mostRecent.next = newNode;
 
-    //this.mostRecent.next.prev = this.mostRecent;
-    //this.mostRecent = this.mostRecent.next;
-    //this.mostRecent.next = null;
-
-    this.cache.set(key, this.mostRecent);
+    this.cache.set(key, this.mostRecent.next);
 
 };
 
@@ -110,6 +107,7 @@ function ListNode(val, key) {
  * [[2],[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]
  */
 
+ /*
  var lru = new LRUCache(2);
  lru.put(1,1);
  lru.put(2,2);
@@ -120,3 +118,10 @@ function ListNode(val, key) {
  lru.get(1);
  lru.get(3);
  lru.get(3);
+*/
+
+var lru = new LRUCache(1);
+lru.put(2,1);
+lru.get(2);
+lru.put(3,2);
+lru.get(2);
